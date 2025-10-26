@@ -1,0 +1,79 @@
+﻿@page "/create-user"
+@inject HttpClient Http
+
+<h3>Create User</h3>
+
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>User Name:</label>
+        <InputText @bind-Value="newUser.UserName" class="form-control" />
+    </div>
+
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="newUser.Email" class="form-control" />
+    </div>
+
+    <div>
+        <label>Account Type:</label>
+        <InputSelect @bind-Value="newUser.AccountType" class="form-control">
+            <option value="">Select...</option>
+            <option value="Host">Host</option>
+            <option value="Customer">Customer</option>
+        </InputSelect>
+    </div>
+
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="newUser.Password" type="password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <p class="@statusClass">@statusMessage</p>
+}
+
+@code {
+    private CreateUserDto newUser = new();
+    private string? statusMessage;
+    private string statusClass = "text-success";
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/user", newUser);
+            if (response.IsSuccessStatusCode)
+            {
+                statusClass = "text-success";
+                statusMessage = "User created successfully!";
+                newUser = new(); // Reset form
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                statusClass = "text-danger";
+                statusMessage = $"Failed to create user. Status {(int)response.StatusCode} {response.ReasonPhrase}. {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusClass = "text-danger";
+            statusMessage = $"Request failed: {ex.Message}";
+        }
+    }
+
+    public class CreateUserDto
+    {
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string AccountType { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}

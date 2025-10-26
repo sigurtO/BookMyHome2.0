@@ -1,0 +1,129 @@
+﻿@page "/users"
+@inject HttpClient Http
+
+<h3>All Users</h3>
+
+@if (users == null)
+{
+    <p>Loading users...</p>
+}
+else if (users.Count == 0)
+{
+    <p>No users found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>Account Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>@user.AccountType</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => EditUser(user)">Update</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteUser(user.UserID)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (editUser != null)
+{
+    <h4>Edit User</h4>
+    <EditForm Model="@editUser" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>User Name:</label>
+            <InputText @bind-Value="editUser.UserName" class="form-control" />
+        </div>
+
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="editUser.Email" class="form-control" />
+        </div>
+
+        <div>
+            <label>Account Type:</label>
+            <InputSelect @bind-Value="editUser.AccountType" class="form-control">
+                <option value="Host">Host</option>
+                <option value="Customer">Customer</option>
+            </InputSelect>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<User> users;
+    private User editUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.GetFromJsonAsync<List<User>>("api/user");
+    }
+
+    private async Task DeleteUser(Guid userId)
+    {
+        var response = await Http.DeleteAsync($"api/user/{userId}");
+        if (response.IsSuccessStatusCode)
+        {
+            users = users.Where(u => u.UserID != userId).ToList();
+        }
+    }
+
+    private void EditUser(User user)
+    {
+        editUser = new User
+        {
+            UserID = user.UserID,
+            UserName = user.UserName,
+            Email = user.Email,
+            AccountType = user.AccountType,
+            Password = user.Password // optional
+        };
+    }
+
+    private async Task HandleUpdate()
+    {
+        var response = await Http.PutAsJsonAsync($"api/user/{editUser.UserID}", editUser);
+        if (response.IsSuccessStatusCode)
+        {
+            var index = users.FindIndex(u => u.UserID == editUser.UserID);
+            if (index != -1)
+            {
+                users[index] = editUser;
+            }
+            editUser = null;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editUser = null;
+    }
+
+    public class User
+    {
+        public Guid UserID { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string AccountType { get; set; }
+        public string Password { get; set; }
+    }
+}
