@@ -1,0 +1,93 @@
+﻿@page "/create-apartment"
+@inject HttpClient Http
+@using BookMyHome.Application.Dtos
+
+<h3>Create Apartment</h3>
+
+<EditForm Model="@apartment" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Host:</label>
+        <InputSelect @bind-Value="apartment.UserID" class="form-control">
+            <option value="">-- Select Host --</option>
+            @foreach (var host in hosts)
+            {
+                <option value="@host.UserID">@host.UserName</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label>Address:</label>
+        <InputText @bind-Value="apartment.Address" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Description:</label>
+        <InputTextArea @bind-Value="apartment.Description" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Price:</label>
+        <InputNumber @bind-Value="apartment.Price" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Available:</label>
+        <InputCheckbox @bind-Value="apartment.AvailabiltyStatus" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</EditForm>
+
+@if (successMessage != null)
+{
+    <div class="alert alert-success mt-3">@successMessage</div>
+}
+
+@code {
+    private ApartmentDto apartment = new();
+    private List<UserDto> hosts = new();
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch all users and filter by AccountType == "Host"
+        var allUsers = await Http.GetFromJsonAsync<List<UserDto>>("api/user");
+        hosts = allUsers?.Where(u => u.AccountType == "Host").ToList() ?? new();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/apartment", apartment);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Apartment created successfully!";
+                apartment = new(); // Reset form
+            }
+            else
+            {
+                successMessage = "Failed to create apartment.";
+            }
+        }
+        catch (Exception ex)
+        {
+            successMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    public class ApartmentDto
+    {
+        public Guid ApartmentID { get; set; }
+        public Guid UserID { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Price { get; set; }
+        public bool AvailabiltyStatus { get; set; }
+	}
+}

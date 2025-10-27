@@ -52,9 +52,17 @@ namespace BookMyHome.Api.Controllers
 
         // PUT: api/user/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] User updatedUser)
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserDto updatedUser)
         {
-            var success = await _userRepository.UpdateAsync(id, updatedUser);
+            var user = new User
+            {
+                UserID = id,
+                UserName = updatedUser.UserName,
+                Email = updatedUser.Email,
+                AccountType = updatedUser.AccountType
+                // Password is not updated here
+            };
+            var success = await _userRepository.UpdateAsync(id, user);
             if (!success) return NotFound();
             return NoContent();
         }
