@@ -31,8 +31,16 @@ namespace BookMyHome.Infrastrcture.Repository
 
         public async Task CreateAsync(Apartment apartment)
         {
-            await _context.Apartments.AddAsync(apartment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.Apartments.AddAsync(apartment);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the exception (ex) as needed
+                throw new Exception("An error occurred while creating the apartment.", ex);
+            }
         }
 
         public async Task<bool> UpdateAsync(Guid id, Apartment apartment)

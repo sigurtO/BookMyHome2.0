@@ -14,6 +14,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContextFactory<DbContextBookMyHome>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IApartmentRepository, ApartmentRepository>(); //dont forget this shit nibba
 
 // CORS for Blazor WASM (development)
 builder.Services.AddCors(options =>
