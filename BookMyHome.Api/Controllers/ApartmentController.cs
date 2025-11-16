@@ -63,6 +63,7 @@ namespace BookMyHome.Api.Controllers
                 Address = dto.Address,
                 Description = dto.Description,
                 Price = dto.Price,
+                Image = dto.Image,
                 AvailabiltyStatus = dto.AvailabiltyStatus
             };
 

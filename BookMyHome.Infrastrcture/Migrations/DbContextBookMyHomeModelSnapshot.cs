@@ -39,6 +39,10 @@ namespace BookMyHome.Infrastrcture.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
