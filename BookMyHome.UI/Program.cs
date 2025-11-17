@@ -1,7 +1,6 @@
 using BookMyHome.UI;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using BookMyHome.UI.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,8 +11,5 @@ builder.Services.AddScoped(sp => new HttpClient
     // Match the API HTTPS URL in BookMyHome.Api\Properties\launchSettings.json
     BaseAddress = new Uri("https://localhost:7269")
 });
-
-// Register UI services
-builder.Services.AddScoped<IImageFileService, ImageFileService>();
     
 await builder.Build().RunAsync();

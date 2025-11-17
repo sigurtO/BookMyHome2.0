@@ -1,6 +1,5 @@
 ﻿@page "/create-apartment"
 @inject HttpClient Http
-@inject BookMyHome.UI.Services.IImageFileService ImageFileService
 @using BookMyHome.Application.Dtos
 @using System.Net.Http.Json
 
@@ -139,17 +138,25 @@
     // 🖼️ Handle image upload //////////////////////////
     private async Task HandleImageFile(InputFileChangeEventArgs e)
     {
-        if (e.File is null) return;
-
-        var result = await ImageFileService.ProcessAsync(e.File, maxBytes: 150_000);
-        if (!result.Success)
+        if (e.File != null)
         {
-            errorMessage = result.Error;
-            return;
-        }
+            if (e.File.Size < 150000) // limit ~150KB
+            {
+                using var stream = new MemoryStream();
+                await e.File.OpenReadStream().CopyToAsync(stream);
+                var imageBytes = stream.ToArray();
 
-        imagePreview = result.DataUrl;
-        apartment.Image = result.Bytes ?? Array.Empty<byte>();
+                // Preview
+                imagePreview = $"data:{e.File.ContentType};base64,{Convert.ToBase64String(imageBytes)}";
+
+                // Save into DTO
+                apartment.Image = imageBytes;
+            }
+            else
+            {
+                errorMessage = "Image too large. Please upload under 150KB.";
+            }
+        }
     }
 
     private class ApiError
