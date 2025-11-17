@@ -1,0 +1,67 @@
+﻿@page "/apartments"
+@inject HttpClient Http
+@using BookMyHome.Application.Dtos
+@using System.Net.Http.Json
+
+<h3>Apartments</h3>
+
+@if (apartments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!apartments.Any())
+{
+    <div class="alert alert-info">No apartments found.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var apt in apartments)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    @if (apt.Image != null && apt.Image.Length > 0)
+                    {
+                        <img class="card-img-top"
+                             src="@($"data:image/png;base64,{Convert.ToBase64String(apt.Image)}")"
+                             alt="Apartment Image"
+                             style="height:200px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top text-center p-5 bg-light text-muted">
+                            No Image
+                        </div>
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title">@apt.Address</h5>
+                        <p class="card-text">@apt.Description</p>
+                        <p><strong>Price:</strong> @apt.Price DKK</p>
+                        <p><strong>Available:</strong> @(apt.AvailabiltyStatus ? "Yes" : "No")</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<ApartmentDto>? apartments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        apartments = await Http.GetFromJsonAsync<List<ApartmentDto>>("api/apartment");
+    }
+
+    public class ApartmentDto
+    {
+        public Guid ApartmentID { get; set; }
+        public Guid UserID { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Price { get; set; }
+        public byte[] Image { get; set; } = Array.Empty<byte>();
+        public bool AvailabiltyStatus { get; set; }
+    }
+}

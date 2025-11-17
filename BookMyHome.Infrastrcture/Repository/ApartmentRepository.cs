@@ -51,6 +51,7 @@ namespace BookMyHome.Infrastrcture.Repository
             existingApartment.Address = apartment.Address;
             existingApartment.Description = apartment.Description;
             existingApartment.Price = apartment.Price;
+            existingApartment.Image = apartment.Image;
             existingApartment.AvailabiltyStatus = apartment.AvailabiltyStatus;
 
             await _context.SaveChangesAsync();
