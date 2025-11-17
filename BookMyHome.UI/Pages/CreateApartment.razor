@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @using BookMyHome.Application.Dtos
 @using System.Net.Http.Json
+@using BookMyHome.UI.Shared
 
 <h3>Create Apartment</h3>
 
@@ -40,22 +41,10 @@
         <InputCheckbox @bind-Value="apartment.AvailabiltyStatus" />
     </div>
 
-    <!-- 🖼️ Image Upload -->
-    <div class="mb-3">
-        <label for="apartmentimage" class="form-label">Apartment Image:</label>
-        <div class="custom-file-input">
-            <InputFile id="apartmentimage"
-                       accept=".jpg,.jpeg,.png"
-                       OnChange="HandleImageFile" />
-            <span class="custom-file-label">Choose File</span>
-        </div>
-        @if (imagePreview != null)
-        {
-            <div style="margin: 1rem; border: solid black 2px; width: 254px; height: 254px;">
-                <img src="@imagePreview" alt="Image Preview" style="width: 250px; height: 250px;" />
-            </div>
-        }
-    </div>
+<ImageUpload Label="Apartment Image"
+             InputId="apartmentimage"
+             OnImageSelected="HandleApartmentImage" />
+
 
     <button type="submit" class="btn btn-primary">Create</button>
 </EditForm>
@@ -83,7 +72,7 @@
     private string? errorDetail;
 
     // 🖼️ Image preview string //////////////////////////
-    private string? imagePreview;
+    //private string? imagePreview;
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,7 +93,7 @@
             {
                 successMessage = "Apartment created successfully!";
                 apartment = new(); // Reset form
-                imagePreview = null; // Clear preview ///////////////////
+                //imagePreview = null; // Clear preview ///////////////////
             }
             else
             {
@@ -136,28 +125,11 @@
     }
 
     // 🖼️ Handle image upload //////////////////////////
-    private async Task HandleImageFile(InputFileChangeEventArgs e)
+    private void HandleApartmentImage(byte[] imageBytes)
     {
-        if (e.File != null)
-        {
-            if (e.File.Size < 150000) // limit ~150KB
-            {
-                using var stream = new MemoryStream();
-                await e.File.OpenReadStream().CopyToAsync(stream);
-                var imageBytes = stream.ToArray();
-
-                // Preview
-                imagePreview = $"data:{e.File.ContentType};base64,{Convert.ToBase64String(imageBytes)}";
-
-                // Save into DTO
-                apartment.Image = imageBytes;
-            }
-            else
-            {
-                errorMessage = "Image too large. Please upload under 150KB.";
-            }
-        }
+        apartment.Image = imageBytes;
     }
+
 
     private class ApiError
     {
